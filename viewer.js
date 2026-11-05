@@ -4,7 +4,7 @@ import { GLTFLoader } from './lib/loaders/GLTFLoader.js';
 import { OrbitControls } from './lib/controls/OrbitControls.js';
 import { RoomEnvironment } from './lib/environments/RoomEnvironment.js';
 
-export function createViewer(host, { onHotspot } = {}) {
+export function createViewer(host, { onHotspot, onPart } = {}) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -84,6 +84,20 @@ export function createViewer(host, { onHotspot } = {}) {
       o.el.classList.toggle('behind', hidden);
     });
   }
+  // detal ustiga bosish: nomi bo'yicha ma'lumot va yorqin ajratish
+  let hl = null; const tap = { x: 0, y: 0, t: 0 };
+  function highlight(mesh) {
+    if (hl) { hl.mesh.material = hl.orig; hl = null; }
+    if (mesh && mesh.material) { const orig = mesh.material, m = orig.clone(); if (m.emissive) { m.emissive.set(0x2f6fd6); m.emissiveIntensity = 0.6; } else if (m.color) m.color.offsetHSL(0, 0, 0.15); mesh.material = m; hl = { mesh, orig }; }
+    dirty = true;
+  }
+  renderer.domElement.addEventListener('pointerdown', e => { tap.x = e.clientX; tap.y = e.clientY; tap.t = performance.now(); });
+  renderer.domElement.addEventListener('pointerup', e => {
+    if (!root || !onPart || Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 7 || performance.now() - tap.t > 600) return;
+    const r = renderer.domElement.getBoundingClientRect(), v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    ray.setFromCamera(v, camera); const hit = ray.intersectObject(root, true).find(h => h.object.isMesh && h.object.visible);
+    highlight(hit ? hit.object : null); onPart(hit ? hit.object.name : null);
+  });
   let last = 0;
   function loop(t = 0) {
     raf = requestAnimationFrame(loop);
@@ -94,7 +108,7 @@ export function createViewer(host, { onHotspot } = {}) {
     }
   }
   return {
-    load, setHotspots, reset,
+    load, setHotspots, reset, clearHighlight() { highlight(null); },
     setAutoRotate(v) { controls.autoRotate = v; dirty = true; },
     toggleHotspots() { hsVisible = !hsVisible; dirty = true; placeHotspots(); return hsVisible; },
     dispose() { cancelAnimationFrame(raf); ro.disconnect(); controls.dispose(); renderer.dispose(); }
