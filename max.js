@@ -752,7 +752,7 @@ export function createMax(root, TX, opts = {}) {
   function renderTasks() {
     const el = $('#mxTasks'); if (el.hidden) return;
     if (!LAB) {
-      el.innerHTML = `<div class="mx-th"><b>🎯 ${esc(TX.tasks_title)}</b><button data-x>×</button></div><p>${esc(t('pick_lab', ''))}</p><ol class="mx-labs">${Object.keys(LABS).map(k => { let d = 0; try { d = JSON.parse(localStorage.getItem('mx_done_' + k) || '[]').length; } catch (e) {} return `<li><a href="#max-${k}"><span>${+k}</span>${esc(LT[k] || '')} <em>${d}/${(LABS[k].tasks || []).length}</em></a></li>`; }).join('')}</ol>`;
+      el.innerHTML = `<div class="mx-th"><b>🎯 ${esc(TX.tasks_title)}</b><button data-x>×</button></div><p>${esc(t('pick_lab', ''))}</p><ol class="mx-labs">${Object.keys(LABS).sort().map(k => { let d = 0; try { d = JSON.parse(localStorage.getItem('mx_done_' + k) || '[]').length; } catch (e) {} return `<li><a href="#max-${k}"><span>${+k}</span>${esc(LT[k] || '')} <em>${d}/${(LABS[k].tasks || []).length}</em></a></li>`; }).join('')}</ol>`;
       return;
     }
     const L = LABS[LAB] || { tasks: [] }, n = L.tasks.length;

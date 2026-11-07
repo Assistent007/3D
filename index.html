@@ -329,7 +329,7 @@ import { createViewer } from './viewer.js';
 
   function hub() {
     document.title = D.title;
-    const cards = Object.keys(D.labs).map(k => {
+    const cards = Object.keys(D.labs).sort().map(k => {
       const L = D.labs[k], done = store['q' + k];
       return `<a class="card" href="#ish-${k}"><div class="thumb"><img src="thumbs/ish${k}.jpg" alt="" loading="lazy"></div>
       <div class="cbody"><div class="cnum">${D.t.ish} ${+k}${done !== undefined ? `<span class="badge">${done}/5</span>` : ''}</div><div class="ctitle">${esc(L.title)}</div></div></a>`;
